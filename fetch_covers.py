@@ -100,7 +100,6 @@ def get_book_covers_by_isbn_dict(isbn_dict):
         cover_dict[book_id] = cover_url  # None if nothing found
 
     return cover_dict
-cover_dict
 
 import matplotlib.pyplot as plt
 import requests
