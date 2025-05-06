@@ -98,11 +98,22 @@ import requests
 from PIL import Image
 from io import BytesIO
 
+import streamlit as st
+import matplotlib.pyplot as plt
+import requests
+from PIL import Image
+from io import BytesIO
+
 def show_book_covers_from_dict(cover_dict):
     """
     Displays book covers using a dictionary {book_id: cover_url}.
     If the cover_url is None, shows a placeholder.
     """
+    # 🔐 Safety check
+    if not cover_dict:
+        st.warning("No book covers found.")
+        return
+
     book_ids = list(cover_dict.keys())
     num_books = len(book_ids)
 
@@ -122,7 +133,7 @@ def show_book_covers_from_dict(cover_dict):
                 img = Image.open(BytesIO(response.content))
                 ax.imshow(img)
             except Exception as e:
-                print(f"Error loading cover for book {book_id}: {e}")
+                st.write(f"Error loading cover for book {book_id}: {e}")
                 _show_placeholder(ax)
         else:
             _show_placeholder(ax)
@@ -131,6 +142,20 @@ def show_book_covers_from_dict(cover_dict):
 
     plt.tight_layout()
     st.pyplot(fig)
+
+def _show_placeholder(ax):
+    """Draw a 'Cover Not Available' placeholder."""
+    ax.text(0.5, 0.5, "Cover Not\nAvailable", ha='center', va='center', fontsize=10, wrap=True)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_facecolor('lightgray')
+
+# Ensure `cover_urls` exists and is valid
+if 'cover_urls' in globals() and cover_urls:
+    show_book_covers_from_dict(cover_urls)
+else:
+    st.warning("No cover URLs to show.")
+
 
 def _show_placeholder(ax):
     """Draw a 'Cover Not Available' placeholder."""
