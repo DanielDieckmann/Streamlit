@@ -14,7 +14,7 @@ import pandas as pd
 # Load the datasets
 interactions = pd.read_csv('https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/interactions_train.csv')
 items = pd.read_csv("https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/items.csv")
-recommendations = pd.read_csv("/content/drive/MyDrive/EPFL/Machine learning/Final Assignment/top_recs.csv")
+recommendations = pd.read_csv("https://raw.githubusercontent.com/DanielDieckmann/Streamlit/refs/heads/main/top_recs.csv")
 
 target_user_id = 5848
 
