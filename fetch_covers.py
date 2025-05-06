@@ -59,6 +59,9 @@ print(isbn_dict)
 
 import requests
 
+import requests
+import streamlit as st
+
 def get_book_covers_by_isbn_dict(isbn_dict):
     """
     For each book_id, try its list of ISBNs with Google Books API.
@@ -72,26 +75,32 @@ def get_book_covers_by_isbn_dict(isbn_dict):
         for isbn in isbn_list:
             try:
                 response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}')
+                
+                if response.status_code != 200:
+                    st.warning(f"Request failed for ISBN {isbn} with status {response.status_code}")
+                    continue
+
                 data = response.json()
 
-                if 'items' in data:
-                    volume_info = data['items'][0]['volumeInfo']
-                    image_links = volume_info.get('imageLinks', {})
-                    cover_url = image_links.get('thumbnail')  # or 'smallThumbnail'
+                if 'items' not in data:
+                    st.info(f"No results for ISBN {isbn}")
+                    continue
 
-                    if cover_url:
-                        break  # Stop at the first valid cover
+                volume_info = data['items'][0].get('volumeInfo', {})
+                image_links = volume_info.get('imageLinks', {})
+                cover_url = image_links.get('thumbnail')
+
+                if cover_url:
+                    break  # found a cover, no need to try other ISBNs
 
             except Exception as e:
-                print(f"Error fetching ISBN {isbn} for book_id {book_id}: {e}")
+                st.error(f"Error fetching ISBN {isbn} for book_id {book_id}: {e}")
                 continue
 
-        cover_dict[book_id] = cover_url  # Will be None if no cover was found
+        cover_dict[book_id] = cover_url  # None if nothing found
 
     return cover_dict
-
-cover_urls = get_book_covers_by_isbn_dict(isbn_dict)
-cover_urls
+cover_dict
 
 import matplotlib.pyplot as plt
 import requests
