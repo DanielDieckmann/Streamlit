@@ -54,14 +54,15 @@ def logout_button():
         st.rerun()
 
 # ---------- Display Books ----------
-def display_books(book_ids):
+def display_books(book_ids, show_titles=True):
     books = df[df['i'].isin(book_ids)]
 
-    # Filter out books without a proper title
-    books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
+    # Filter out books without a title (unless we're hiding them anyway)
+    if show_titles:
+        books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
 
     if books.empty:
-        st.info("No books with valid titles found.")
+        st.info("No books found for this section.")
         return
 
     cols = st.columns(5)
@@ -73,11 +74,13 @@ def display_books(book_ids):
             else:
                 st.empty()
 
-            button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
-            if st.button(row['Title'], key=button_key):
-                st.session_state.selected_book = row['i']
-                st.session_state.page = "book_detail"
-                st.rerun()
+            if show_titles:
+                button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
+                if st.button(row['Title'], key=button_key):
+                    st.session_state.selected_book = row['i']
+                    st.session_state.page = "book_detail"
+                    st.rerun()
+
 
 
 # ---------- Main Page ----------
@@ -86,14 +89,15 @@ def show_main_page():
     logout_button()
 
     st.subheader("🆕 New to MovieSMT")
-    display_books(NEW_TO_MOVIESMT)
+    display_books(NEW_TO_MOVIESMT, show_titles=False)  # 👈 no titles
 
     st.subheader("🇨🇭 Top Ten in Switzerland")
-    display_books(TOP_TEN_SWITZERLAND)
+    display_books(TOP_TEN_SWITZERLAND)  # 👈 titles shown
 
-    st.subheader("📖 Recommended for You")
+    st.subheader("📖 Recommended For You")
     user_books = USERS[st.session_state.username]["books"]
-    display_books(user_books)
+    display_books(user_books)  # 👈 titles shown
+
 
 # ---------- Book Detail Page ----------
 def show_book_detail(book_id):
