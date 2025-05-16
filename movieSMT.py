@@ -19,6 +19,11 @@ df = load_data()
 
 # ---------- Main Logic ----------
 def main():
+    if st.session_state.get("logged_out"):
+        st.title("👋 Goodbye!")
+        st.success("Thanks for visiting BookSMT. See you soon!")
+        st.session_state.logged_out = False
+        return
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     if "page" not in st.session_state:
@@ -60,7 +65,9 @@ def logout_button():
         st.session_state.page = "main"
         st.session_state.selected_book = None
         st.session_state.basket = []
+        st.session_state.logged_out = True
         st.rerun()
+
 
 # ---------- Display Books ----------
 def display_books(book_ids, section="default"):
