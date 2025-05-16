@@ -108,7 +108,7 @@ def show_book_detail(book_id):
 
     cols = st.columns([1, 2])
     with cols[0]:
-        image_url = book['image_original'] if pd.notna(book['image_original']) else book['image']
+        image_url = book['image'] if pd.notna(book['image']) else book['image']
         if pd.notna(image_url):
             st.image(image_url, use_container_width=True)
         else:
