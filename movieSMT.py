@@ -56,6 +56,14 @@ def logout_button():
 # ---------- Display Books ----------
 def display_books(book_ids):
     books = df[df['i'].isin(book_ids)]
+
+    # Filter out books without a proper title
+    books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
+
+    if books.empty:
+        st.info("No books with valid titles found.")
+        return
+
     cols = st.columns(5)
     for idx, (_, row) in enumerate(books.iterrows()):
         with cols[idx % 5]:
@@ -63,11 +71,14 @@ def display_books(book_ids):
             if image_url:
                 st.image(image_url, width=100)
             else:
-                st.empty()  # or use a placeholder
-            if st.button(row['Title'], key=f"book_{row['i']}"):
+                st.empty()
+
+            button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
+            if st.button(row['Title'], key=button_key):
                 st.session_state.selected_book = row['i']
                 st.session_state.page = "book_detail"
                 st.rerun()
+
 
 # ---------- Main Page ----------
 def show_main_page():
