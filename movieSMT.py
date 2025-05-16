@@ -19,11 +19,17 @@ df = load_data()
 
 # ---------- Main Logic ----------
 def main():
+    # Initialize session state safely
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
+    if "page" not in st.session_state:
         st.session_state.page = "main"
+    if "basket" not in st.session_state:
         st.session_state.basket = []
+    if "selected_book" not in st.session_state:
+        st.session_state.selected_book = None
 
+    # Routing logic
     if not st.session_state.authenticated:
         login()
     else:
@@ -31,6 +37,7 @@ def main():
             show_main_page()
         elif st.session_state.page == "book_detail":
             show_book_detail(st.session_state.selected_book)
+
 
 # ---------- Login ----------
 def login():
