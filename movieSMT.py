@@ -89,7 +89,7 @@ def show_book_detail(book_id):
 
     cols = st.columns([1, 2])
     with cols[0]:
-        st.image(book['image_original'], use_column_width=True)
+        st.image(book['image'], use_column_width=True)
 
     with cols[1]:
         st.markdown(f"""
