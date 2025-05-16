@@ -56,28 +56,30 @@ def logout_button():
 # ---------- Display Books ----------
 def display_books(book_ids, section="default"):
     books = df[df['i'].isin(book_ids)]
-
     books = books[books['Title'].notna()]
 
     if books.empty:
         st.info("No books found for this section.")
         return
 
-    cols = st.columns(5)
-    for idx, (_, row) in enumerate(books.iterrows()):
-        with cols[idx % 5]:
-            image_url = row['image'] if pd.notna(row['image']) else None
-            if image_url:
-                st.image(image_url, width=100, use_container_width=True)
-            else:
-                st.empty()
+    # Display books in rows of 5
+    for i in range(0, len(books), 5):
+        row_books = books.iloc[i:i+5]
+        cols = st.columns(5)
+        for idx, (_, row) in enumerate(row_books.iterrows()):
+            with cols[idx]:
+                image_url = row['image'] if pd.notna(row['image']) else None
+                if image_url:
+                    st.image(image_url, use_container_width=True)
+                else:
+                    st.markdown("📕 *Cover not available*")
 
-            # MAKE KEY UNIQUE BY USING SECTION NAME
-            button_key = f"{section}_book_{int(row['i']) if pd.notna(row['i']) else idx}"
-            if st.button("View", key=button_key):
-                st.session_state.selected_book = row['i']
-                st.session_state.page = "book_detail"
-                st.rerun()
+                button_key = f"{section}_book_{int(row['i']) if pd.notna(row['i']) else i+idx}"
+                if st.button("View", key=button_key):
+                    st.session_state.selected_book = row['i']
+                    st.session_state.page = "book_detail"
+                    st.rerun()
+
 
 
 # ---------- Main Page ----------
