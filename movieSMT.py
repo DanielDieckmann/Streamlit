@@ -54,26 +54,12 @@ def logout_button():
         st.rerun()
 
 # ---------- Display Books ----------
-def show_main_page():
-    st.title("🎬 MovieSMT Dashboard")
-    logout_button()
 
-    st.subheader("🆕 New to MovieSMT")
-    display_books(NEW_TO_MOVIESMT, show_titles=False)
-
-    st.subheader("🇨🇭 Top Ten in Switzerland")
-    display_books(TOP_TEN_SWITZERLAND)
-
-    st.subheader("📖 Recommended For You")
-    user_books = USERS[st.session_state.username]["books"]
-    display_books(user_books)
-
-
-def display_books(book_ids, show_titles=True):
+def display_books(book_ids):
     books = df[df['i'].isin(book_ids)]
 
-    if show_titles:
-        books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
+    # Remove rows with no title
+    books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
 
     if books.empty:
         st.info("No books found for this section.")
@@ -88,15 +74,17 @@ def display_books(book_ids, show_titles=True):
             else:
                 st.empty()
 
-            if show_titles and pd.notna(row['Title']):
-                short_title = row['Title'][:10] + '...' if len(row['Title']) > 10 else row['Title']
-                st.caption(short_title)
+            # Show truncated title (first 10 characters)
+            short_title = row['Title'][:10] + '...' if len(row['Title']) > 10 else row['Title']
+            st.caption(short_title)
 
+            # Unique button for click interaction
             button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
             if st.button("View", key=button_key):
                 st.session_state.selected_book = row['i']
                 st.session_state.page = "book_detail"
                 st.rerun()
+
 
 
 # ---------- Main Page ----------
