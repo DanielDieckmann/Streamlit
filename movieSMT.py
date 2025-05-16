@@ -54,10 +54,9 @@ def logout_button():
         st.rerun()
 
 # ---------- Display Books ----------
-def display_books(book_ids):
+def display_books(book_ids, section="default"):
     books = df[df['i'].isin(book_ids)]
 
-    # Filter out invalid entries
     books = books[books['Title'].notna()]
 
     if books.empty:
@@ -73,11 +72,13 @@ def display_books(book_ids):
             else:
                 st.empty()
 
-            button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
+            # MAKE KEY UNIQUE BY USING SECTION NAME
+            button_key = f"{section}_book_{int(row['i']) if pd.notna(row['i']) else idx}"
             if st.button("View", key=button_key):
                 st.session_state.selected_book = row['i']
                 st.session_state.page = "book_detail"
                 st.rerun()
+
 
 # ---------- Main Page ----------
 def show_main_page():
@@ -85,14 +86,15 @@ def show_main_page():
     logout_button()
 
     st.subheader("🆕 New to MovieSMT")
-    display_books(NEW_TO_MOVIESMT)
+    display_books(NEW_TO_MOVIESMT, section="new")
 
     st.subheader("🇨🇭 Top Ten in Switzerland")
-    display_books(TOP_TEN_SWITZERLAND)
+    display_books(TOP_TEN_SWITZERLAND, section="topten")
 
     st.subheader("📖 Recommended For You")
     user_books = USERS[st.session_state.username]["books"]
-    display_books(user_books)
+    display_books(user_books, section=st.session_state.username)
+
 
 # ---------- Book Detail Page ----------
 def show_book_detail(book_id):
