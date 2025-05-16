@@ -4,7 +4,7 @@ import pandas as pd
 # ---------- Configuration ----------
 DATA_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/merged_items.csv"
 USERS = {
-    "olivialaven": {"password": "1234", "books": [942, 858, 8541, 4141, 8442, 912, 12, 84, 1394, 8742]},
+    "olivialaven": {"password": "ilovevlachos", "books": [942, 858, 8541, 4141, 8442, 912, 12, 84, 1394, 8742]},
     "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 84834, 831, 8592, 8529, 12, 414, 1446]}
 }
 NEW_TO_BOOKSMT = [23, 8482, 8316, 5886, 584]
@@ -147,7 +147,7 @@ def show_book_detail(book_id):
 
     cols = st.columns([1, 2])
     with cols[0]:
-        image_url = book['image_original'] if pd.notna(book['image_original']) else book['image']
+        image_url = book['image'] if pd.notna(book['image']) else book['image']
         if pd.notna(image_url):
             st.image(image_url, use_container_width=True)
         else:
