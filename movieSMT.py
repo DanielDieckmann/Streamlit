@@ -4,11 +4,11 @@ import pandas as pd
 # ---------- Configuration ----------
 DATA_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/merged_items.csv"
 USERS = {
-    "olivialaven": {"password": "ilovevlachos", "books": [942, 858, 8541, 4141, 8442, 912, 12, 84, 1394, 8742]},
-    "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 84834, 831, 8592, 8529, 12, 414, 1446]}
+    "olivialaven": {"password": "ilovevlachos", "books": [942, 858, 8541, 4141, 8442]},
+    "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 84834, 831]}
 }
 NEW_TO_BOOKSMT = [23, 8482, 8316, 5886, 584]
-TOP_TEN_SWITZERLAND = [23, 948, 48482, 8482, 8316, 5886, 1433, 4242, 489, 11, 1799]
+TOP_TEN_SWITZERLAND = [23, 948, 48482, 8482, 8316]
 
 # ---------- Load Data ----------
 @st.cache_data
@@ -128,7 +128,7 @@ def show_main_page():
     st.subheader("🆕 New to BookSMT")
     display_books(NEW_TO_BOOKSMT, section="new")
 
-    st.subheader("🇨🇭 Top Ten in Switzerland")
+    st.subheader("🇨🇭 Top Five in Switzerland")
     display_books(TOP_TEN_SWITZERLAND, section="topten")
 
     st.subheader("📖 Recommended For You")
