@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # ---------- Configuration ----------
-DATA_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/your_file.csv"  # <-- Replace this!
+DATA_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/merged_items.csv"  # <-- Replace this!
 USERS = {
     "olivialaven": {"password": "1234", "books": [942, 858, 8541, 4141, 8442, 912, 12, 84, 1394, 8742]},
     "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 84834, 831, 8592, 8529, 12, 414, 1446]}
