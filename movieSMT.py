@@ -54,12 +54,11 @@ def logout_button():
         st.rerun()
 
 # ---------- Display Books ----------
-def display_books(book_ids, show_titles=True):
+def display_books(book_ids):
     books = df[df['i'].isin(book_ids)]
 
-    # Filter out books without a title (unless we're hiding them anyway)
-    if show_titles:
-        books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
+    # Remove rows with no title
+    books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
 
     if books.empty:
         st.info("No books found for this section.")
@@ -70,18 +69,20 @@ def display_books(book_ids, show_titles=True):
         with cols[idx % 5]:
             image_url = row['image'] if pd.notna(row['image']) else None
             if image_url:
-                st.image(image_url, width=100)
+                st.image(image_url, width=100, use_container_width=True)
             else:
                 st.empty()
 
-            if show_titles:
-                button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
-                if st.button(row['Title'], key=button_key):
-                    st.session_state.selected_book = row['i']
-                    st.session_state.page = "book_detail"
-                    st.rerun()
+            # Show truncated title (first 10 characters)
+            short_title = row['Title'][:10] + '...' if len(row['Title']) > 10 else row['Title']
+            st.caption(short_title)
 
-
+            # Unique button for click interaction
+            button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
+            if st.button("View", key=button_key):
+                st.session_state.selected_book = row['i']
+                st.session_state.page = "book_detail"
+                st.rerun()
 
 # ---------- Main Page ----------
 def show_main_page():
