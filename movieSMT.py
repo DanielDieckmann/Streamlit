@@ -128,6 +128,8 @@ def display_basket():
             st.rerun()
 
 # ---------- Main Page ----------
+from rapidfuzz import fuzz
+
 def show_main_page():
     st.title("🎬 BookSMT Dashboard")
     logout_button()
@@ -135,20 +137,27 @@ def show_main_page():
     # --- Search Section ---
     st.subheader("🔍 Search for a Book")
     search_query = st.text_input("Search by title, author, or ISBN")
+
     if search_query:
-        results = df[df['Title'].notna()]  # Ensure only valid titles
-        query_lower = search_query.lower()
-        results = results[
-            results['Title'].str.lower().str.contains(query_lower) |
-            results['Author'].fillna("").str.lower().str.contains(query_lower) |
-            results['ISBN'].fillna("").astype(str).str.contains(query_lower)
-        ]
+        st.markdown("#### 🔎 Search Results")
+        results = df[df['Title'].notna()].copy()
+
+        def fuzzy_match_score(row):
+            title_score = fuzz.partial_ratio(search_query.lower(), str(row['Title']).lower())
+            author_score = fuzz.partial_ratio(search_query.lower(), str(row['Author']).lower() if pd.notna(row['Author']) else "")
+            isbn_score = fuzz.partial_ratio(search_query.lower(), str(row['ISBN']) if 'ISBN' in row else "")
+            return max(title_score, author_score, isbn_score)
+
+        results["score"] = results.apply(fuzzy_match_score, axis=1)
+        results = results[results["score"] > 40]  # Threshold for relevance
+        results = results.sort_values(by=["score", "Title"], ascending=[False, True])
+
         if results.empty:
-            st.warning("No books found matching your search.")
+            st.warning("No close matches found.")
         else:
-            sorted_results = results.sort_values(by="Title")
-            display_books(sorted_results['i'].tolist(), section="search")
-        st.markdown("---")  # Divider between search and rest of dashboard
+            display_books(results['i'].astype(int).tolist(), section="search")
+
+        st.markdown("---")
 
     st.subheader("🆕 New to BookSMT")
     display_books(NEW_TO_BOOKSMT, section="new")
@@ -161,6 +170,7 @@ def show_main_page():
     display_books(user_books, section=st.session_state.username)
 
     display_basket()
+
 
 
 # ---------- Book Detail Page ----------
