@@ -132,6 +132,24 @@ def show_main_page():
     st.title("🎬 BookSMT Dashboard")
     logout_button()
 
+    # --- Search Section ---
+    st.subheader("🔍 Search for a Book")
+    search_query = st.text_input("Search by title, author, or ISBN")
+    if search_query:
+        results = df[df['Title'].notna()]  # Ensure only valid titles
+        query_lower = search_query.lower()
+        results = results[
+            results['Title'].str.lower().str.contains(query_lower) |
+            results['Author'].fillna("").str.lower().str.contains(query_lower) |
+            results['ISBN'].fillna("").astype(str).str.contains(query_lower)
+        ]
+        if results.empty:
+            st.warning("No books found matching your search.")
+        else:
+            sorted_results = results.sort_values(by="Title")
+            display_books(sorted_results['i'].tolist(), section="search")
+        st.markdown("---")  # Divider between search and rest of dashboard
+
     st.subheader("🆕 New to BookSMT")
     display_books(NEW_TO_BOOKSMT, section="new")
 
@@ -143,6 +161,7 @@ def show_main_page():
     display_books(user_books, section=st.session_state.username)
 
     display_basket()
+
 
 # ---------- Book Detail Page ----------
 def show_book_detail(book_id):
