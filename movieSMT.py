@@ -7,7 +7,7 @@ USERS = {
     "olivialaven": {"password": "1234", "books": [942, 858, 8541, 4141, 8442, 912, 12, 84, 1394, 8742]},
     "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 84834, 831, 8592, 8529, 12, 414, 1446]}
 }
-NEW_TO_MOVIESMT = [23, 948, 48482, 8482, 8316, 5886, 584, 932, 9931, 5882]
+NEW_TO_BOOKSMT = [23, 8482, 8316, 5886, 584]
 TOP_TEN_SWITZERLAND = [23, 948, 48482, 8482, 8316, 5886, 14373, 4242, 489, 1233]
 
 # ---------- Load Data ----------
@@ -32,7 +32,7 @@ def main():
             show_book_detail(st.session_state.selected_book)
 
 def login():
-    st.title("🔐 Login to MovieSMT")
+    st.title("🔐 Login to BookSMT")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
@@ -84,11 +84,11 @@ def display_books(book_ids, section="default"):
 
 # ---------- Main Page ----------
 def show_main_page():
-    st.title("🎬 MovieSMT Dashboard")
+    st.title("🎬 BookSMT Dashboard")
     logout_button()
 
-    st.subheader("🆕 New to MovieSMT")
-    display_books(NEW_TO_MOVIESMT, section="new")
+    st.subheader("🆕 New to BookSMT")
+    display_books(NEW_TO_BOOKSMT, section="new")
 
     st.subheader("🇨🇭 Top Ten in Switzerland")
     display_books(TOP_TEN_SWITZERLAND, section="topten")
