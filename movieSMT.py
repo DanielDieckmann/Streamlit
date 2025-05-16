@@ -59,7 +59,11 @@ def display_books(book_ids):
     cols = st.columns(5)
     for idx, (_, row) in enumerate(books.iterrows()):
         with cols[idx % 5]:
-            st.image(row['image'], width=100)
+            image_url = row['image'] if pd.notna(row['image']) else None
+            if image_url:
+                st.image(image_url, width=100)
+            else:
+                st.empty()  # or use a placeholder
             if st.button(row['Title'], key=f"book_{row['i']}"):
                 st.session_state.selected_book = row['i']
                 st.session_state.page = "book_detail"
