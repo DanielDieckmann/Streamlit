@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # ---------- Configuration ----------
-DATA_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/merged_items.csv"  # <-- Replace this!
+DATA_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/merged_items.csv"
 USERS = {
     "olivialaven": {"password": "1234", "books": [942, 858, 8541, 4141, 8442, 912, 12, 84, 1394, 8742]},
     "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 84834, 831, 8592, 8529, 12, 414, 1446]}
@@ -54,12 +54,11 @@ def logout_button():
         st.rerun()
 
 # ---------- Display Books ----------
-
 def display_books(book_ids):
     books = df[df['i'].isin(book_ids)]
 
-    # Remove rows with no title
-    books = books[books['Title'].notna() & (books['Title'].str.strip() != '')]
+    # Filter out invalid entries
+    books = books[books['Title'].notna()]
 
     if books.empty:
         st.info("No books found for this section.")
@@ -74,18 +73,11 @@ def display_books(book_ids):
             else:
                 st.empty()
 
-            # Show truncated title (first 10 characters)
-            short_title = row['Title'][:10] + '...' if len(row['Title']) > 10 else row['Title']
-            st.caption(short_title)
-
-            # Unique button for click interaction
             button_key = f"book_{int(row['i']) if pd.notna(row['i']) else idx}"
             if st.button("View", key=button_key):
                 st.session_state.selected_book = row['i']
                 st.session_state.page = "book_detail"
                 st.rerun()
-
-
 
 # ---------- Main Page ----------
 def show_main_page():
@@ -93,26 +85,30 @@ def show_main_page():
     logout_button()
 
     st.subheader("🆕 New to MovieSMT")
-    display_books(NEW_TO_MOVIESMT, show_titles=False)  # 👈 no titles
+    display_books(NEW_TO_MOVIESMT)
 
     st.subheader("🇨🇭 Top Ten in Switzerland")
-    display_books(TOP_TEN_SWITZERLAND)  # 👈 titles shown
+    display_books(TOP_TEN_SWITZERLAND)
 
     st.subheader("📖 Recommended For You")
     user_books = USERS[st.session_state.username]["books"]
-    display_books(user_books)  # 👈 titles shown
-
+    display_books(user_books)
 
 # ---------- Book Detail Page ----------
 def show_book_detail(book_id):
     book = df[df['i'] == book_id].squeeze()
     st.title(book['Title'])
 
-    st.button("⬅️ Back to Home", on_click=lambda: switch_to_main())
+    if st.button("⬅️ Back to Home"):
+        switch_to_main()
 
     cols = st.columns([1, 2])
     with cols[0]:
-        st.image(book['image'], use_column_width=True)
+        image_url = book['image_original'] if pd.notna(book['image_original']) else book['image']
+        if pd.notna(image_url):
+            st.image(image_url, use_container_width=True)
+        else:
+            st.warning("No image available.")
 
     with cols[1]:
         st.markdown(f"""
@@ -120,6 +116,7 @@ def show_book_detail(book_id):
         **Author:** {book['Author']}  
         **Published:** {book['date_published']}  
         **ISBN Valid:** {book['ISBN Valid']}  
+
         **Synopsis:**  
         {book['synopsis'] if pd.notna(book['synopsis']) else 'No synopsis available.'}
         """)
