@@ -19,7 +19,6 @@ df = load_data()
 
 # ---------- Main Logic ----------
 def main():
-    # Initialize session state safely
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     if "page" not in st.session_state:
@@ -29,7 +28,6 @@ def main():
     if "selected_book" not in st.session_state:
         st.session_state.selected_book = None
 
-    # Routing logic
     if not st.session_state.authenticated:
         login()
     else:
@@ -37,7 +35,8 @@ def main():
             show_main_page()
         elif st.session_state.page == "book_detail":
             show_book_detail(st.session_state.selected_book)
-
+        elif st.session_state.page == "checkout":
+            show_checkout_page()
 
 # ---------- Login ----------
 def login():
@@ -117,10 +116,9 @@ def display_basket():
             st.session_state.basket = []
             st.rerun()
     with col2:
-        if st.button("💳 Checkout"):
-            st.success("✅ Payment via Apple Pay mockup complete!")
-            st.markdown("🧾 *Receipt generated (not really).*")
-            st.session_state.basket = []
+        if st.button("🧾 Go to Checkout"):
+            st.session_state.page = "checkout"
+            st.rerun()
 
 # ---------- Main Page ----------
 def show_main_page():
@@ -173,7 +171,7 @@ def show_book_detail(book_id):
         else:
             st.info("✅ Already in basket")
 
-    # ---------- More by Same Author ----------
+    # More by the same author
     author = book['Author']
     if pd.notna(author):
         same_author_books = df[(df['Author'] == author) & (df['i'] != book['i'])]
@@ -185,7 +183,38 @@ def show_book_detail(book_id):
             st.subheader("📚 More from this author")
             st.info("No other books by this author found.")
 
-# ---------- Back Navigation ----------
+# ---------- Checkout Page ----------
+def show_checkout_page():
+    st.title("💳 Checkout")
+
+    if not st.session_state.basket:
+        st.info("Your basket is empty.")
+        if st.button("⬅️ Back to Main"):
+            switch_to_main()
+        return
+
+    basket_books = df[df['i'].isin(st.session_state.basket)]
+
+    st.subheader("🧺 Your Items")
+    for _, book in basket_books.iterrows():
+        st.markdown(f"**{book['Title']}** by {book['Author']}")
+        if pd.notna(book['image']):
+            st.image(book['image'], width=100)
+        st.markdown("---")
+
+    st.subheader("💳 Payment Options")
+    st.markdown("🔘 **Apple Pay (Mock)**")
+
+    if st.button("✅ Pay with Apple Pay"):
+        st.success("🎉 Mock payment successful! Thank you.")
+        st.balloons()
+        st.session_state.basket = []
+        if st.button("⬅️ Return to Main Page"):
+            switch_to_main()
+    elif st.button("⬅️ Cancel and Go Back"):
+        switch_to_main()
+
+# ---------- Navigation ----------
 def switch_to_main():
     st.session_state.page = "main"
     st.session_state.selected_book = None
