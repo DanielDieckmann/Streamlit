@@ -7,8 +7,8 @@ USERS = {
     "olivialaven": {"password": "ilovevlachos", "books": [942, 858, 8541, 4141, 8442]},
     "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 84834, 831]}
 }
-NEW_TO_BOOKSMT = [235, 8482, 8316, 5886, 584]
-TOP_TEN_SWITZERLAND = [2663, 948, 48482, 8482, 8316]
+NEW_TO_BOOKSMT = [235, 8482, 8316, 5886, 584, 838]
+TOP_TEN_SWITZERLAND = [2663, 948, 48482, 8482, 8316, 123]
 
 # ---------- Load Data ----------
 @st.cache_data
