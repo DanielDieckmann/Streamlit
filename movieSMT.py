@@ -22,6 +22,7 @@ def main():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
         st.session_state.page = "main"
+        st.session_state.basket = []
 
     if not st.session_state.authenticated:
         login()
@@ -31,6 +32,7 @@ def main():
         elif st.session_state.page == "book_detail":
             show_book_detail(st.session_state.selected_book)
 
+# ---------- Login ----------
 def login():
     st.title("🔐 Login to BookSMT")
     username = st.text_input("Username")
@@ -45,12 +47,13 @@ def login():
         else:
             st.error("Invalid username or password.")
 
-# ---------- Logout Button ----------
+# ---------- Logout ----------
 def logout_button():
     if st.button("🚪 Logout"):
         st.session_state.authenticated = False
         st.session_state.page = "main"
         st.session_state.selected_book = None
+        st.session_state.basket = []
         st.rerun()
 
 # ---------- Display Books ----------
@@ -62,7 +65,6 @@ def display_books(book_ids, section="default"):
         st.info("No books found for this section.")
         return
 
-    # Display books in rows of 5
     for i in range(0, len(books), 5):
         row_books = books.iloc[i:i+5]
         cols = st.columns(5)
@@ -80,7 +82,38 @@ def display_books(book_ids, section="default"):
                     st.session_state.page = "book_detail"
                     st.rerun()
 
+# ---------- Basket ----------
+def display_basket():
+    st.subheader("🧺 Your Basket")
+    if not st.session_state.basket:
+        st.info("Your basket is empty.")
+        return
 
+    basket_books = df[df['i'].isin(st.session_state.basket)]
+    for i in range(0, len(basket_books), 5):
+        row_books = basket_books.iloc[i:i+5]
+        cols = st.columns(5)
+        for idx, (_, row) in enumerate(row_books.iterrows()):
+            with cols[idx]:
+                if pd.notna(row['image']):
+                    st.image(row['image'], use_container_width=True)
+                else:
+                    st.markdown("📕 *Cover not available*")
+                if st.button("Remove", key=f"remove_{row['i']}"):
+                    st.session_state.basket.remove(row['i'])
+                    st.rerun()
+
+    st.markdown("---")
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🗑️ Clear Basket"):
+            st.session_state.basket = []
+            st.rerun()
+    with col2:
+        if st.button("💳 Checkout"):
+            st.success("✅ Payment via Apple Pay mockup complete!")
+            st.markdown("🧾 *Receipt generated (not really).*")
+            st.session_state.basket = []
 
 # ---------- Main Page ----------
 def show_main_page():
@@ -97,6 +130,7 @@ def show_main_page():
     user_books = USERS[st.session_state.username]["books"]
     display_books(user_books, section=st.session_state.username)
 
+    display_basket()
 
 # ---------- Book Detail Page ----------
 def show_book_detail(book_id):
@@ -108,7 +142,7 @@ def show_book_detail(book_id):
 
     cols = st.columns([1, 2])
     with cols[0]:
-        image_url = book['image'] if pd.notna(book['image']) else book['image']
+        image_url = book['image_original'] if pd.notna(book['image_original']) else book['image']
         if pd.notna(image_url):
             st.image(image_url, use_container_width=True)
         else:
@@ -125,6 +159,26 @@ def show_book_detail(book_id):
         {book['synopsis'] if pd.notna(book['synopsis']) else 'No synopsis available.'}
         """)
 
+        if book['i'] not in st.session_state.basket:
+            if st.button("🧺 Add to Basket"):
+                st.session_state.basket.append(book['i'])
+                st.success("Book added to basket!")
+        else:
+            st.info("✅ Already in basket")
+
+    # ---------- More by Same Author ----------
+    author = book['Author']
+    if pd.notna(author):
+        same_author_books = df[(df['Author'] == author) & (df['i'] != book['i'])]
+        if not same_author_books.empty:
+            st.subheader(f"📚 More from {author}")
+            similar_ids = same_author_books['i'].dropna().astype(int).unique()[:5]
+            display_books(similar_ids, section=f"more_{book_id}")
+        else:
+            st.subheader("📚 More from this author")
+            st.info("No other books by this author found.")
+
+# ---------- Back Navigation ----------
 def switch_to_main():
     st.session_state.page = "main"
     st.session_state.selected_book = None
