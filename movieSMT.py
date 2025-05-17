@@ -7,8 +7,7 @@ USERS = {
     "olivialaven": {"password": "ilovevlachos", "books": [942, 858, 8541, 4141, 8442]},
     "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 8434, 831]}
 }
-NEW_TO_BOOKSMT = [235, 8482, 8316, 5886, 838]
-TOP_TEN_SWITZERLAND = [2663, 948, 4482, 8482, 8316]
+
 
 # ---------- Load Data ----------
 @st.cache_data
@@ -16,6 +15,11 @@ def load_data():
     return pd.read_csv(DATA_URL)
 
 df = load_data()
+
+top_books = df['i'].value_counts()
+TOP_TEN_SWITZERLAND = top_books.head(5).index.tolist()
+NEW_TO_BOOKSMT = [235, 8482, 8316, 5886, 838]
+#TOP_TEN_SWITZERLAND = [2663, 948, 4482, 8482, 8316]
 
 # ---------- Main Logic ----------
 def main():
