@@ -138,30 +138,45 @@ def show_main_page():
     st.title("🎬 BookSMT Dashboard")
     logout_button()
 
-    # --- Search Section with Autocomplete ---
+    # --- Search Section with Autocomplete + Improved Matching ---
     st.subheader("🔍 Search for a Book")
     search_query = st.text_input("Search by title or author")
 
-    # Autocomplete-style suggestions (after 2+ characters)
+    # Show autocomplete-style suggestions
     if search_query and len(search_query) > 2:
-        suggestions = df[df['Title'].str.contains(search_query, case=False, na=False)].dropna(subset=['Title']).head(5)['Title'].tolist()
+        suggestions = df[df['Title'].str.contains(search_query, case=False, na=False)] \
+            .dropna(subset=['Title']).head(5)['Title'].tolist()
         if suggestions:
             st.markdown("##### 💡 Suggestions:")
             for s in suggestions:
                 st.markdown(f"- {s}")
 
-    # Search results using fuzzy matching
+    # Search results using improved matching logic
     if search_query:
         st.markdown("#### 🔎 Search Results")
         results = df[df['Title'].notna()].copy()
 
-        def fuzzy_match_score(row):
-            title_score = fuzz.partial_ratio(search_query.lower(), str(row['Title']).lower())
-            author_score = fuzz.partial_ratio(search_query.lower(), str(row['Author']).lower() if pd.notna(row['Author']) else "")
+        def improved_match_score(row):
+            title = str(row['Title']).lower()
+            author = str(row['Author']).lower() if pd.notna(row['Author']) else ""
+            query = search_query.lower()
+
+            # Highest priority for exact/substring matches
+            if query in title or query in author:
+                return 100
+
+            # Slight boost if title starts with query
+            if title.startswith(query):
+                return 95
+
+            # Fuzzy fallback
+            title_score = fuzz.partial_ratio(query, title)
+            author_score = fuzz.partial_ratio(query, author)
+
             return max(title_score, author_score)
 
-        results["score"] = results.apply(fuzzy_match_score, axis=1)
-        results = results[results["score"] > 50]
+        results["score"] = results.apply(improved_match_score, axis=1)
+        results = results[results["score"] >= 60]  # Filter weaker matches
         results = results.sort_values(by=["score", "Title"], ascending=[False, True])
 
         if results.empty:
@@ -170,6 +185,19 @@ def show_main_page():
             display_books(results['i'].astype(int).tolist(), section="search")
 
         st.markdown("---")
+
+    # --- Remaining Sections ---
+    st.subheader("🆕 New to BookSMT")
+    display_books(NEW_TO_BOOKSMT, section="new")
+
+    st.subheader("🇨🇭 Top Five in Switzerland")
+    display_books(TOP_TEN_SWITZERLAND, section="topten")
+
+    st.subheader("📖 Recommended For You")
+    user_books = USERS[st.session_state.username]["books"]
+    display_books(user_books, section=st.session_state.username)
+
+    display_basket()
 
     # --- Other Sections ---
     st.subheader("🆕 New to BookSMT")
