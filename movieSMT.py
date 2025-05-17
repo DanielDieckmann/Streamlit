@@ -132,14 +132,17 @@ def display_basket():
             st.rerun()
 
 # ---------- Main Page ----------
+from rapidfuzz import fuzz
+
 def show_main_page():
     st.title("🎬 BookSMT Dashboard")
     logout_button()
 
+    # --- Search Section with Fuzzy + Suggestions ---
     st.subheader("🔍 Search for a Book")
     search_query = st.text_input("Search by title or author")
 
-    # Autocomplete-style suggestions
+    # Autocomplete suggestions
     if search_query and len(search_query) > 2:
         suggestions = df[df['Title'].str.contains(search_query, case=False, na=False)] \
             .dropna(subset=['Title']).head(5)['Title'].tolist()
@@ -148,24 +151,42 @@ def show_main_page():
             for s in suggestions:
                 st.markdown(f"- {s}")
 
-    # Basic case-insensitive substring search (fast!)
+    # Fuzzy search logic
     if search_query:
         st.markdown("#### 🔎 Search Results")
+        results = df[df['Title'].notna()].copy()
         query = search_query.lower()
 
-        results = df[
-            df['Title'].fillna('').str.lower().str.contains(query) |
-            df['Author'].fillna('').str.lower().str.contains(query)
-        ]
+        def fuzzy_score(row):
+            title = str(row['Title']).lower()
+            author = str(row['Author']).lower() if pd.notna(row['Author']) else ""
+
+            if query in title or query in author:
+                return 100
+            if title.startswith(query):
+                return 95
+
+            title_score = fuzz.partial_ratio(query, title)
+            author_score = fuzz.partial_ratio(query, author)
+            return max(title_score, author_score)
+
+        # Apply fuzzy scoring
+        results["score"] = results.apply(fuzzy_score, axis=1)
+
+        # Keep only reasonably good matches
+        results = results[results["score"] >= 60]
+
+        # Sort and limit to top 10
+        results = results.sort_values(by=["score", "Title"], ascending=[False, True]).head(10)
 
         if results.empty:
-            st.warning("No matches found.")
+            st.warning("No good matches found.")
         else:
             display_books(results['i'].astype(int).tolist(), section="search")
 
         st.markdown("---")
 
-    # Other sections
+    # --- Other Sections ---
     st.subheader("🆕 New to BookSMT")
     display_books(NEW_TO_BOOKSMT, section="new")
 
@@ -177,6 +198,7 @@ def show_main_page():
     display_books(user_books, section=st.session_state.username)
 
     display_basket()
+
 
     # --- Remaining Sections ---
     st.subheader("🆕 New to BookSMT")
