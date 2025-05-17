@@ -138,10 +138,19 @@ def show_main_page():
     st.title("🎬 BookSMT Dashboard")
     logout_button()
 
-    # --- Search Section ---
+    # --- Search Section with Autocomplete ---
     st.subheader("🔍 Search for a Book")
-    search_query = st.text_input("Search by title, author, or ISBN")
+    search_query = st.text_input("Search by title or author")
 
+    # Autocomplete-style suggestions (after 2+ characters)
+    if search_query and len(search_query) > 2:
+        suggestions = df[df['Title'].str.contains(search_query, case=False, na=False)].dropna(subset=['Title']).head(5)['Title'].tolist()
+        if suggestions:
+            st.markdown("##### 💡 Suggestions:")
+            for s in suggestions:
+                st.markdown(f"- {s}")
+
+    # Search results using fuzzy matching
     if search_query:
         st.markdown("#### 🔎 Search Results")
         results = df[df['Title'].notna()].copy()
@@ -149,20 +158,20 @@ def show_main_page():
         def fuzzy_match_score(row):
             title_score = fuzz.partial_ratio(search_query.lower(), str(row['Title']).lower())
             author_score = fuzz.partial_ratio(search_query.lower(), str(row['Author']).lower() if pd.notna(row['Author']) else "")
-            isbn_score = fuzz.partial_ratio(search_query.lower(), str(row['ISBN']) if 'ISBN' in row else "")
-            return max(title_score, author_score, isbn_score)
+            return max(title_score, author_score)
 
         results["score"] = results.apply(fuzzy_match_score, axis=1)
-        results = results[results["score"] > 40]  # Threshold for relevance
+        results = results[results["score"] > 50]
         results = results.sort_values(by=["score", "Title"], ascending=[False, True])
 
         if results.empty:
-            st.warning("No close matches found.")
+            st.warning("No matches found.")
         else:
             display_books(results['i'].astype(int).tolist(), section="search")
 
         st.markdown("---")
 
+    # --- Other Sections ---
     st.subheader("🆕 New to BookSMT")
     display_books(NEW_TO_BOOKSMT, section="new")
 
@@ -174,6 +183,8 @@ def show_main_page():
     display_books(user_books, section=st.session_state.username)
 
     display_basket()
+
+
 
 
 
