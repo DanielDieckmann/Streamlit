@@ -186,32 +186,6 @@ def show_main_page():
 
         st.markdown("---")
 
-    # --- Other Sections ---
-    st.subheader("🆕 New to BookSMT")
-    display_books(NEW_TO_BOOKSMT, section="new")
-
-    st.subheader("🇨🇭 Top Five in Switzerland")
-    display_books(TOP_TEN_SWITZERLAND, section="topten")
-
-    st.subheader("📖 Recommended For You")
-    user_books = USERS[st.session_state.username]["books"]
-    display_books(user_books, section=st.session_state.username)
-
-    display_basket()
-
-
-    # --- Remaining Sections ---
-    st.subheader("🆕 New to BookSMT")
-    display_books(NEW_TO_BOOKSMT, section="new")
-
-    st.subheader("🇨🇭 Top Five in Switzerland")
-    display_books(TOP_TEN_SWITZERLAND, section="topten")
-
-    st.subheader("📖 Recommended For You")
-    user_books = USERS[st.session_state.username]["books"]
-    display_books(user_books, section=st.session_state.username)
-
-    display_basket()
 
     # --- Other Sections ---
     st.subheader("🆕 New to BookSMT")
