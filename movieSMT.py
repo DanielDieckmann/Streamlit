@@ -36,9 +36,13 @@ def generate_placeholder_image():
     except:
         font = ImageFont.load_default()
 
-    text_width, text_height = draw.textsize(text, font=font)
+    # ✅ Use textbbox instead of deprecated textsize
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
     x = (img.width - text_width) / 2
     y = (img.height - text_height) / 2
+
     draw.text((x, y), text, fill=(80, 80, 80), font=font)
 
     buf = io.BytesIO()
