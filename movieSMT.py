@@ -218,7 +218,7 @@ def show_book_detail(book_id):
             st.info("✅ Already in basket")
 
     # Similar items section
-    similar_row = similar_df[similar_df['book_id'] == book_id]
+    similar_row = similar_df[similar_df['item_id'] == book_id]
     if not similar_row.empty:
         st.subheader("📚 Similar Books")
         similar_ids = [int(similar_row.iloc[0][col]) for col in similar_row.columns[1:] if pd.notna(similar_row.iloc[0][col])]
