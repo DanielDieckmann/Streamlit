@@ -7,49 +7,6 @@ from rapidfuzz import fuzz
 # ---------- Page Configuration ----------
 st.set_page_config(page_title="BookSMT", layout="wide")
 
-# ---------- Custom CSS Styling ----------
-st.markdown("""
-    <style>
-    .scroll-container {
-        display: flex;
-        overflow-x: auto;
-        padding: 10px 0;
-    }
-    .book-card {
-        flex: 0 0 auto;
-        width: 150px;
-        margin-right: 15px;
-        background-color: #f5f5f5;
-        padding: 10px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        text-align: center;
-    }
-    .book-title {
-        font-size: 14px;
-        font-weight: bold;
-        margin: 8px 0 4px 0;
-    }
-    .book-author {
-        font-size: 12px;
-        color: #666;
-    }
-    .section-title {
-        font-size: 20px;
-        font-weight: bold;
-        margin-top: 30px;
-        margin-bottom: 10px;
-    }
-    .stButton>button {
-        background-color: #0066cc;
-        color: white;
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-weight: bold;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 # ---------- Configuration ----------
 DATA_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/merged_items.csv"
 SIMILAR_ITEMS_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/streamlit/similar_items.csv"
@@ -70,8 +27,7 @@ def load_similar_items():
 df = load_data()
 similar_df = load_similar_items()
 
-df['Subjects'] = df['Subjects'].fillna('Unknown')
-TOP_TEN_SWITZERLAND = df['i'].value_counts().head(10).index.tolist()
+TOP_TEN_SWITZERLAND = df['i'].value_counts().head(5).index.tolist()
 NEW_TO_BOOKSMT = [235, 8482, 8316, 5886, 838]
 
 # ---------- Placeholder Image ----------
@@ -96,7 +52,7 @@ def generate_placeholder_image():
 # ---------- Main Logic ----------
 def main():
     if st.session_state.get("logged_out"):
-        st.title("\U0001F44B Goodbye!")
+        st.title("👋 Goodbye!")
         st.success("Thanks for visiting BookSMT. See you soon!")
         st.session_state.logged_out = False
         return
@@ -119,13 +75,13 @@ def main():
 # ---------- Sidebar Navigation ----------
 def navigation_sidebar():
     with st.sidebar:
-        st.title("\U0001F4DA BookSMT")
-        if st.button("\U0001F3E0 Home"):
+        st.title("📚 BookSMT")
+        if st.button("🏠 Home"):
             switch_to_main()
-        if st.button("\U0001F9FA Basket"):
+        if st.button("🧺 Basket"):
             st.session_state.page = "checkout"
             st.rerun()
-        if st.button("\U0001F6AA Logout"):
+        if st.button("🚪 Logout"):
             st.session_state.authenticated = False
             st.session_state.page = "main"
             st.session_state.selected_book = None
@@ -135,7 +91,7 @@ def navigation_sidebar():
 
 # ---------- Login ----------
 def login():
-    st.title("\U0001F512 Login to BookSMT")
+    st.title("🔐 Login to BookSMT")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
@@ -166,20 +122,41 @@ def display_books(book_ids, section="default"):
                     st.session_state.page = "book_detail"
                     st.rerun()
 
+# ---------- Basket ----------
+def display_basket():
+    st.subheader("🧺 Your Basket")
+    if not st.session_state.basket:
+        st.info("Your basket is empty.")
+        return
+    placeholder_img = generate_placeholder_image()
+    basket_books = df[df['i'].isin(st.session_state.basket)]
+    for i in range(0, len(basket_books), 5):
+        row_books = basket_books.iloc[i:i+5]
+        cols = st.columns(5)
+        for idx, (_, row) in enumerate(row_books.iterrows()):
+            with cols[idx]:
+                st.image(row['image'] if pd.notna(row['image']) else placeholder_img, use_container_width=True)
+                if st.button("Remove", key=f"remove_{row['i']}"):
+                    st.session_state.basket.remove(row['i'])
+                    st.rerun()
+    st.markdown("---")
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🗑️ Clear Basket"):
+            st.session_state.basket = []
+            st.rerun()
+    with col2:
+        if st.button("🧾 Go to Checkout"):
+            st.session_state.page = "checkout"
+            st.rerun()
+
 # ---------- Main Page ----------
 def show_main_page():
-    st.title("\U0001F3AC BookSMT Dashboard")
-
-    st.subheader("\U0001F50D Search for a Book")
+    st.title("🎬 BookSMT Dashboard")
+    st.subheader("🔍 Search for a Book")
     search_query = st.text_input("Search by title or author")
-    selected_genre = st.selectbox("Filter by Subject", options=["All"] + sorted(df['Subjects'].unique().tolist()))
-
-    filtered_df = df.copy()
-    if selected_genre != "All":
-        filtered_df = filtered_df[filtered_df['Subjects'] == selected_genre]
-
     if search_query:
-        results = filtered_df[filtered_df['Title'].notna()].copy()
+        results = df[df['Title'].notna()].copy()
         query = search_query.lower()
 
         def fuzzy_score(row):
@@ -196,39 +173,20 @@ def show_main_page():
         if results.empty:
             st.warning("No good matches found.")
         else:
-            st.markdown("#### \U0001F50E Search Results")
+            st.markdown("#### 🔎 Search Results")
             display_books(results['i'].astype(int).tolist(), section="search")
         st.markdown("---")
 
-    st.subheader("\U0001F195 New to BookSMT")
+    st.subheader("🆕 New to BookSMT")
     display_books(NEW_TO_BOOKSMT, section="new")
 
-    st.markdown('<div class="section-title">\U0001F1E8\U0001F1ED Top Ten in Switzerland</div>', unsafe_allow_html=True)
-    top_books = df[df['i'].isin(TOP_TEN_SWITZERLAND)]
-    placeholder_img = generate_placeholder_image()
+    st.subheader("🇨🇭 Top Five in Switzerland")
+    display_books(TOP_TEN_SWITZERLAND, section="topten")
 
-    scroll_html = '<div class="scroll-container">'
-    for _, book in top_books.iterrows():
-        img_url = book['image'] if pd.notna(book['image']) else ""
-        img_tag = f'<img src="{img_url}" width="120">' if img_url else f'<img src="data:image/png;base64,{placeholder_img.getvalue().hex()}" width="120">'
-        scroll_html += f"""
-        <div class=\"book-card\">
-            {img_tag}
-            <div class=\"book-title\">{book['Title']}</div>
-            <div class=\"book-author\">{book['Author']}</div>
-        </div>
-        """
-    scroll_html += '</div>'
-    st.markdown(scroll_html, unsafe_allow_html=True)
-
-    st.subheader("\U0001F4D6 Recommended For You")
+    st.subheader("📖 Recommended For You")
     display_books(USERS[st.session_state.username]["books"], section=st.session_state.username)
 
     display_basket()
-
-# ---------- Basket, Book Detail, Checkout, Navigation ----------
-# (unchanged from your current script – keep as-is)
-
 
 # ---------- Book Detail Page ----------
 def show_book_detail(book_id):
