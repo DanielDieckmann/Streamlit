@@ -127,6 +127,76 @@ def show_book_detail(book_id):
             st.subheader("\ud83d\udcda More from this author")
             st.info("No other books by this author found.")
 
-# ---------- Run App ----------
-# Continue with login(), logout_button(), show_main_page(), etc. from your existing code
-# Paste those functions below this, unchanged unless you want help modifying those as well
+# ---------- Session State Initialization ----------
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+if "basket" not in st.session_state:
+    st.session_state.basket = []
+if "page" not in st.session_state:
+    st.session_state.page = "main"
+if "selected_book" not in st.session_state:
+    st.session_state.selected_book = None
+
+
+# ---------- Login Function ----------
+def login():
+    st.title("📚 BookSMT Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        user = USERS.get(username)
+        if user and user["password"] == password:
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.basket = user["books"].copy()
+            st.session_state.page = "main"
+            st.success("Login successful!")
+            st.rerun()
+        else:
+            st.error("Invalid credentials")
+
+
+# ---------- Logout Button ----------
+def logout_button():
+    if st.sidebar.button("Logout"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
+
+
+# ---------- Switch to Main Page ----------
+def switch_to_main():
+    st.session_state.page = "main"
+    st.session_state.selected_book = None
+    st.rerun()
+
+
+# ---------- Show Main Page ----------
+def show_main_page():
+    st.title(f"Welcome to BookSMT, {st.session_state.username}!")
+
+    logout_button()
+
+    st.subheader("🇨🇭 Top Books in Switzerland")
+    display_books(TOP_TEN_SWITZERLAND, section="top")
+
+    st.subheader("🆕 New to BookSMT")
+    display_books(NEW_TO_BOOKSMT, section="new")
+
+    st.subheader("📚 Your Basket")
+    if st.session_state.basket:
+        display_books(st.session_state.basket, section="basket")
+    else:
+        st.info("Your basket is empty.")
+
+
+# ---------- Page Navigation ----------
+if not st.session_state.logged_in:
+    login()
+elif st.session_state.page == "main":
+    show_main_page()
+elif st.session_state.page == "book_detail":
+    show_book_detail(st.session_state.selected_book)
+
