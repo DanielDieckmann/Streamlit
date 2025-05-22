@@ -229,9 +229,7 @@ def show_book_detail(book_id):
     
         display_books(similar_ids, section=f"similar_{book_id}")
 
-
         
-    ]
 
 
     # More from same author
