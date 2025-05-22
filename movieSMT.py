@@ -219,15 +219,15 @@ def show_book_detail(book_id):
 
     # Similar items section
     similar_row = similar_df[similar_df['item_id'] == book_id]
-        if not similar_row.empty:
+    if not similar_row.empty:
         st.subheader("📚 Similar Books")
         similar_ids = [
             int(similar_row.iloc[0][col])
             for col in similar_row.columns[1:6]  # Only take the first 5 similar items
             if pd.notna(similar_row.iloc[0][col])
-        ]
+            ]
     
-    display_books(similar_ids, section=f"similar_{book_id}")
+        display_books(similar_ids, section=f"similar_{book_id}")
 
 
         
