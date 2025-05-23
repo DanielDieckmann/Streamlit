@@ -4,6 +4,29 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 from rapidfuzz import fuzz
 
+st.markdown(
+    """
+    <style>
+    /* Main background */
+    .main {
+        background-color: #e6f0ff;  /* Light blue */
+    }
+
+    /* Sidebar background */
+    section[data-testid="stSidebar"] {
+        background-color: #cce0ff;  /* Darker blue */
+    }
+
+    /* Optional: tweak text color for contrast */
+    .css-1d391kg, .css-q8sbsg, .css-10trblm, .css-1v0mbdj {
+        color: #000000 !important;  /* Black text */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 # ---------- Page Configuration ----------
 st.set_page_config(page_title="BookSMT", layout="wide")
 
