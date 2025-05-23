@@ -11,8 +11,8 @@ st.set_page_config(page_title="BookSMT", layout="wide")
 DATA_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/merged_items.csv"
 SIMILAR_ITEMS_URL = "https://raw.githubusercontent.com/olivialaven/MGT502_project/refs/heads/main/streamlit/similar_items.csv"
 USERS = {
-    "olivialaven": {"password": "ilovevlachos", "books": [942, 858, 8541, 4141, 8442]},
-    "danieldieckmann": {"password": "1234", "books": [183, 884, 3881, 8434, 831]}
+    "robertdowneyjr": {"password": "welovevlachos", "books": [942, 858, 8541, 4141, 8442]},
+    "danieldieckmann": {"password": "welovevlachos", "books": [183, 884, 3881, 8434, 831]}
 }
 
 # ---------- Load Data ----------
